@@ -23,7 +23,7 @@ The workflow is divided into three parts, reflecting an iterative refinement of 
 
 ### Part A & B: Image Processing (FIJI/ImageJ Macros)
 
-These scripts handle the transition from raw microscopy frames to clean, binary masks ready for tracking.
+These scripts handle the transition from raw microscopy frames to clean, binary masks ready for tracking (i.e., A. Segmentation -> B. Tracking). 
 
 * **Phase 1: Mathematical Foundation (`01_calc_nematic_order_single.ijm`)**
 Implemented the Nematic Order Parameter ($S_r$) formula derived from Basaran (2022). It calculates the alignment of bacteria relative to the colony center using polar coordinates.
