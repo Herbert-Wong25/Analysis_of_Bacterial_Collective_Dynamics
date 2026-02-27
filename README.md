@@ -10,6 +10,9 @@ Mechanotaxis allows individual bacteria to direct their motility based on physic
 
 * **Image Processing:** FIJI / ImageJ
 * **Cell Tracking:** TrackMate (FIJI Plugin)
+* **Computational Analysis:** Python 3.9+
+* **Core Libraries:** `pandas`, `numpy`, `scipy`, `matplotlib`, `seaborn`
+* **Advanced Bio-Imaging:** `omnipose` (CNN-based segmentation), `scikit-image`, `opencv-python-headless`
 
 ---
 
@@ -40,3 +43,33 @@ Baseline extraction of orientations and initial $S_r$ calculations across mutant
 Divided the Field of View (FOV) into quadrants to investigate if alignment was a local micro-domain phenomenon rather than a global colony trait.
 * **Phase 7: Neighbor-Based Filtering (`09_final_mechanotaxis_analysis.ipynb`)**
 The most refined analysis. Instead of arbitrary quadrants, I implemented a **radius-based filter (30µm)**. This calculates the alignment of each bacterium only with its immediate physical neighbors, providing a true biological measure of coordinated mechanotaxis.
+
+---
+
+## 📊 Results & Biological Interpretation
+
+---
+
+## 🛠 Methodology: Calculating Nematic Order ($S_r$)
+
+To quantify the alignment of bacteria relative to the expansion of the colony, the following parameter was implemented:
+
+$$S_r = \langle \cos(2(\theta_i - \phi_i)) \rangle$$
+
+Where:
+
+* $\theta_i$ is the orientation of the $i$-th bacterium relative to the x-axis.
+* $\phi_i$ is the angular position of the bacterium relative to the centroid of the colony.
+* $S_r = 1$: Perfect radial/nematic alignment.
+* $S_r = 0$: Random, isotropic orientation.
+
+---
+
+## 📂 Project Structure
+
+* **`/macros`**: FIJI/ImageJ scripts for automated segmentation and $S_r$ calculation.
+* **`/notebooks`**: Jupyter notebooks for batch processing TrackMate data and spatial statistics.
+* **`/demo`**: Comparison montages of auto-thresholding methods and video demos of the tracking pipeline.
+* **`requirements.txt`**: List of Python dependencies for the analysis environment.
+
+---
