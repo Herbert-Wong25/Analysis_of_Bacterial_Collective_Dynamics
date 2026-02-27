@@ -73,3 +73,33 @@ Where:
 * **`requirements.txt`**: List of Python dependencies for the analysis environment.
 
 ---
+
+## ⚙️ Setup & Installation
+
+### 1. ImageJ/FIJI
+
+1. Download [FIJI](https://fiji.sc/).
+2. Ensure the **TrackMate** plugin is updated via `Help > Update`.
+
+### 2. Python Environment
+
+I recommend using Anaconda to manage the environment:
+
+```bash
+# Create and activate a new environment
+conda create -n mechanotaxis python=3.9
+conda activate mechanotaxis
+
+# Install dependencies
+pip install -r requirements.txt
+
+```
+
+---
+
+## 📝 Future Work & Potential Enhancements
+
+* **PIV Analysis:** Implementing Particle Image Velocimetry to characterize the "flow field" in regions of extreme density where individual cell tracking fails.
+* **Deep Learning:** Further integration of `Omnipose` for more robust segmentation of non-standard bacterial morphologies.
+
+---
