@@ -29,3 +29,14 @@ Expanded logic to handle image stacks (time-lapse movies), allowing for the obse
 Introduced automated background subtraction and evaluated multiple thresholding algorithms (Yen, Triangle) to remove observer bias.
 * **Phase 4: Advanced Watershed Pipeline (`04_segmentation_advanced_watershed.ijm`)**
 The final production script. It utilizes **Top-Hat Filtering** for contrast enhancement and **Watershed Transformation** to resolve overlapping cell boundaries in high-density regions, ensuring data integrity for dense collective groups.
+
+### Part C: Data Interpretation (Python Notebooks)
+
+Once single-cell trajectories were extracted via TrackMate, I developed a Python pipeline to move from "global" averages to "local" spatial interactions.
+
+* **Phase 5: Exploratory Analysis (`05_exploratory_nematic_analysis.ipynb`)**
+Baseline extraction of orientations and initial $S_r$ calculations across mutant conditions.
+* **Phase 6: Spatial Coordination (`07_quadrant_spatial_analysis.ipynb`)**
+Divided the Field of View (FOV) into quadrants to investigate if alignment was a local micro-domain phenomenon rather than a global colony trait.
+* **Phase 7: Neighbor-Based Filtering (`09_final_mechanotaxis_analysis.ipynb`)**
+The most refined analysis. Instead of arbitrary quadrants, I implemented a **radius-based filter (30µm)**. This calculates the alignment of each bacterium only with its immediate physical neighbors, providing a true biological measure of coordinated mechanotaxis.
