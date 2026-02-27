@@ -5,3 +5,11 @@ This repository contains a computational workflow designed to analyze the collec
 ## 🔬 Scientific Context
 
 Mechanotaxis allows individual bacteria to direct their motility based on physical cues from their environment. While single-cell mechanosensing is well-documented, the transition to collective movement in dense colonies requires robust image segmentation and tracking. This project replicates and extends analytical techniques to quantify how mechanosensing prevents "traffic jams" and coordinates group alignment.
+
+---
+
+## 🚀 The Pipeline & Script Evolution
+
+The workflow is divided into three parts, reflecting an iterative refinement of both image processing and statistical analysis.
+
+### Part A & B: Image Processing (FIJI/ImageJ Macros)
