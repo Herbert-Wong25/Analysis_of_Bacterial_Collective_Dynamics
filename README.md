@@ -6,6 +6,11 @@ This repository contains a computational workflow designed to analyze the collec
 
 Mechanotaxis allows individual bacteria to direct their motility based on physical cues from their environment. While single-cell mechanosensing is well-documented, the transition to collective movement in dense colonies requires robust image segmentation and tracking. This project replicates and extends analytical techniques to quantify how mechanosensing prevents "traffic jams" and coordinates group alignment.
 
+## 🛠 Tech Stack & Dependencies
+
+* **Image Processing:** FIJI / ImageJ
+* **Cell Tracking:** TrackMate (FIJI Plugin)
+
 ---
 
 ## 🚀 The Pipeline & Script Evolution
@@ -13,3 +18,14 @@ Mechanotaxis allows individual bacteria to direct their motility based on physic
 The workflow is divided into three parts, reflecting an iterative refinement of both image processing and statistical analysis.
 
 ### Part A & B: Image Processing (FIJI/ImageJ Macros)
+
+These scripts handle the transition from raw microscopy frames to clean, binary masks ready for tracking.
+
+* **Phase 1: Mathematical Foundation (`01_calc_nematic_order_single.ijm`)**
+Implemented the Nematic Order Parameter ($S_r$) formula derived from Basaran (2022). It calculates the alignment of bacteria relative to the colony center using polar coordinates.
+* **Phase 2: Temporal Analysis (`02_calc_nematic_order_stack.ijm`)**
+Expanded logic to handle image stacks (time-lapse movies), allowing for the observation of alignment dynamics over time.
+* **Phase 3: Automated Segmentation (`03_segmentation_auto_threshold.ijm`)**
+Introduced automated background subtraction and evaluated multiple thresholding algorithms (Yen, Triangle) to remove observer bias.
+* **Phase 4: Advanced Watershed Pipeline (`04_segmentation_advanced_watershed.ijm`)**
+The final production script. It utilizes **Top-Hat Filtering** for contrast enhancement and **Watershed Transformation** to resolve overlapping cell boundaries in high-density regions, ensuring data integrity for dense collective groups.
