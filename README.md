@@ -55,7 +55,7 @@ The key methodological advance from Phase 3 onward was the **Watershed
 Transformation** — critical for resolving overlapping cell boundaries in dense
 twitching colonies where simple thresholding fails.
 
-### Part C: Data Interpretation (Python Notebooks)
+### Part C: Data Interpretation (Python Notebooks) (work-in-progress for optimization)
 
 Once single-cell trajectories were extracted via TrackMate, I developed a Python pipeline to move from "global" averages to "local" spatial interactions.
 
