@@ -1,134 +1,229 @@
-# Quantifying Bacterial Mechanotaxis & Group Dynamics
+# Quantifying Bacterial Mechanotaxis & Collective Dynamics
 
-This repository contains a computational workflow designed to analyze the collective surface-specific "twitching" motility of *Pseudomonas aeruginosa*. Based on the research by **Kühn et al. (PNAS 2021)**, this project implements a pipeline to extract quantitative data from microscopy images to understand how the **Chp mechanosensory system** (specifically regulators **PilG** and **PilH**) influences group coordination.
+Computational pipeline for quantifying collective surface-specific twitching motility in *Pseudomonas aeruginosa* — comparing Wild-Type (WT) with Chp mechanosensory mutants ($\Delta pilG$ and $\Delta pilH$) across dense, medium, and dilute colony densities.
+
+Based on: **Kühn et al. (PNAS 2021)** — [DOI: 10.1073/pnas.2101759118](https://doi.org/10.1073/pnas.2101759118)
+
+---
 
 ## 🔬 Scientific Context
 
-Mechanotaxis allows individual bacteria to direct their motility based on physical cues. While single-cell mechanosensing is known to regulate pili deployment, this project explores its role in collective behavior. By comparing Wild-Type (WT) strains with $\Delta pilG$ and $\Delta pilH$ mutants, we quantify how mechanosensing prevents "traffic jams" and promotes orientational order in dense colonies.
+Mechanotaxis allows individual *P. aeruginosa* cells to direct twitching motility in response to physical input from type IV pili (T4P). The chemotaxis-like **Chp system** — including regulators **PilG** and **PilH** — controls reversal frequency upon cell–cell collisions, enabling coordinated group movement.
+
+This project builds on Kühn et al. by quantifying how loss of mechanosensing disrupts collective order at the population level. Three strains are compared:
+
+| Strain | Genotype | Expected phenotype |
+|---|---|---|
+| **WT** | *ΔfliC* | Balanced reversals; intermediate collective order |
+| **pilG** | *ΔfliC ΔpilG* | Frequent reversals; low net displacement; high local alignment at dense conditions |
+| **pilH** | *ΔfliC ΔpilH* | Persistent directional movement; high displacement; variable alignment due to jamming |
+
+---
 
 ## 🛠 Tech Stack & Dependencies
 
-* **Image Processing:** FIJI / ImageJ
-* **Cell Tracking:** TrackMate (FIJI Plugin)
-* **Computational Analysis:** Python 3.9+
-* **Core Libraries:** `pandas`, `numpy`, `scipy`, `matplotlib`, `seaborn`
-* **Advanced Bio-Imaging:** `omnipose` (CNN-based segmentation), `scikit-image`, `opencv-python-headless`
-* **Segmentation:** Omnipose (CNN-based)
+| Tool | Purpose |
+|---|---|
+| **FIJI / ImageJ** | Image visualisation, segmentation development, macro scripting |
+| **Omnipose** | CNN-based segmentation optimised for rod-shaped bacteria |
+| **TrackMate** (FIJI plugin) | Single-cell tracking via Label Image Detector |
+| **Python 3.9+** | Batch analysis, nematic order quantification, visualisation |
+| `pandas`, `numpy`, `scipy` | Data processing and spatial statistics |
+| `matplotlib` | Figure generation |
 
 ---
 
-## 🚀 The Pipeline & Script Evolution
+## 🚀 Pipeline Overview
 
-The workflow is divided into three parts, reflecting an iterative refinement of both image processing and statistical analysis.
+The workflow follows three sequential parts:
 
-### Part A & B: Image Processing (FIJI/ImageJ Macros)
-
-These scripts handle the transition from raw microscopy frames to clean binary
-masks ready for TrackMate tracking.
-
-#### Quick Start — Run This
-
-For end-to-end processing of a full movie, use the production pipeline:
-
-**`Production_Pipeline.ijm`**
-
-This single script performs segmentation (Part A) and Nematic Order Sr
-quantification (Part B) for all frames and outputs a CSV file
-`[filename]_Sr.csv`. Update the three parameters in **Section 0** before
-running (frame interval, particle size limits, circularity threshold).
+```
+Raw microscopy TIFFs
+        │
+        ▼
+  Part A: Segmentation (Omnipose → binary masks)
+        │
+        ▼
+  Part B: Tracking (TrackMate → cell coordinates + orientations CSV)
+        │
+        ▼
+  Part C: Analysis (Python → Nematic Order Sr, displacement, visualisation)
+```
 
 ---
 
-#### Pipeline Development History
+## Part A & B: Segmentation & Tracking (FIJI/ImageJ Macros)
 
-The production script was developed iteratively through four stages, archived
-in `/macros/evolution/` for transparency and reproducibility:
+### Segmentation approach
+
+Segmentation was performed using **Omnipose** (not FIJI's built-in thresholding), as it operates on the full 16-bit pixel intensity spectrum and uniquely labels each cell (values 0–65,535). This preserves per-cell resolution that is critical for downstream orientation extraction.
+
+> **Note on the FIJI macros:** An earlier segmentation pipeline was developed in FIJI using rolling-ball background subtraction + Top-Hat filtering + Triangle auto-threshold + Watershed (documented in `/macros/evolution/`). These macros were ultimately not used for final results because FIJI's thresholding step converts Omnipose's 16-bit labelled masks to binary images, discarding the per-cell label information that makes Omnipose superior. The macros are retained here as a documented development record.
+
+### Tracking approach
+
+TrackMate's **Label Image Detector** was used on Omnipose masks. This detector reads unique integer cell labels directly — outperforming LoG and Mask detectors on dense bacterial images (see `/demo/` for comparison). The **Advanced Kalman Tracker** was selected after systematic comparison of six tracking algorithms, with final parameters: Initial search radius = 2 µm, Search radius = 5 µm.
+
+### FIJI Macro Scripts — Quick Start
+
+For end-to-end segmentation and Sr calculation on a raw movie:
+
+**`/macros/Bacterial_Mechanotaxis_Pipeline.ijm`**
+
+Update the three parameters in **Section 0** before running (frame interval, particle size limits, circularity threshold). Outputs `[filename]_Sr.csv`.
+
+### FIJI Macro Development History
+
+Archived in `/macros/evolution/` for transparency:
 
 | Script | Stage | What it introduced |
 |---|---|---|
-| `01_calc_nematic_order_single.ijm` | Mathematical foundation | Sr formula validated on a single frame using manual threshold |
-| `02_calc_nematic_order_stack.ijm` | Temporal analysis | Extended to full image stacks; switched to Triangle auto-threshold; added CSV export |
-| `03_segmentation_auto_threshold.ijm` | Segmentation development | Rolling-ball background subtraction + Top-Hat + Watershed; 3-frame test loop |
-| `04_segmentation_advanced_watershed.ijm` | Single-frame production | Validated final segmentation pipeline for individual QC inspection before batch runs |
+| `01_calc_nematic_order_single.ijm` | Mathematical foundation | Sr formula validated on a single frame; manual threshold [3–65535] from training data |
+| `02_calc_nematic_order_stack.ijm` | Temporal analysis | Extended to full image stacks; Triangle auto-threshold; CSV export |
+| `03_segmentation_auto_threshold.ijm` | Segmentation testing | Rolling-ball + Top-Hat + Watershed pipeline; 3-frame test loop for parameter optimisation |
+| `04_segmentation_advanced_watershed.ijm` | Single-frame production | Validated segmentation for visual QC before TrackMate handoff |
 
-The key methodological advance from Phase 3 onward was the **Watershed
-Transformation** — critical for resolving overlapping cell boundaries in dense
-twitching colonies where simple thresholding fails.
-
-### Part C: Data Interpretation (Python Notebooks) (work-in-progress for optimization)
-
-Once single-cell trajectories were extracted via TrackMate, I developed a Python pipeline to move from "global" averages to "local" spatial interactions.
-
-* **Spatial Analysis:** Developed a distance-based filtering algorithm (`09_final_mechanotaxis_analysis.ipynb`) to calculate the **Nematic Order Parameter ($S_r$)** only for cells within a 30µm radius, providing a true measure of local coordination.
-
-* **Phase 5: Exploratory Analysis (`05_exploratory_nematic_analysis.ipynb`)**
-Baseline extraction of orientations and initial $S_r$ calculations across mutant conditions.
-* **Phase 6: Spatial Coordination (`07_quadrant_spatial_analysis.ipynb`)**
-Divided the Field of View (FOV) into quadrants to investigate if alignment was a local micro-domain phenomenon rather than a global colony trait.
-* **Phase 7: Neighbor-Based Filtering (`09_final_mechanotaxis_analysis.ipynb`)**
-The most refined analysis. Instead of arbitrary quadrants, I implemented a **radius-based filter (30µm)**. This calculates the alignment of each bacterium only with its immediate physical neighbors, providing a true biological measure of coordinated mechanotaxis.
+The key methodological advance from Phase 3 onward was **Watershed Transformation** — essential for separating overlapping cell boundaries in dense twitching colonies where simple thresholding fails.
 
 ---
 
-## 📊 Results & Biological Interpretation
+## Part C: Nematic Order Analysis (Python Notebooks)
 
-The computational analysis revealed that the Chp system is fundamental to collective phase transitions in *P. aeruginosa*.
+### Quick Start
 
-### 1. Quantification of Nematic Order ($S_r$)
+**`/notebooks/09_Mechanotaxis_Analysis_Pipeline.ipynb`**
 
-Using the polar coordinate alignment formula, we quantified the transition from random to aligned movement:
+Single end-to-end notebook. Update `DATA_DIR` and `OUTPUT_DIR` in **Section 0** before running. Outputs five CSVs and three figures to `data/results/`.
 
-* **Wild-Type (WT):** Exhibited high local coordination with $S_r$ values peaking at **~0.45** in dense regions. This indicates a robust ability to align trajectories with neighbors.
-* **Mutants ($\Delta pilG$ and $\Delta pilH$):** Showed a significant breakdown in coordination, with $S_r$ values dropping to **~0.1–0.2**. Without functional mechanosensing, cells remain in a poorly ordered, isotropic state.
+### Two Sr formulas implemented
 
-### 2. Spatial Dynamics & "Crowding" Effects
+| Label in notebook | Label in report | Formula | Outcome |
+|---|---|---|---|
+| **Sr₁ (Legendre)** | Equation 2 | $\langle(3\cos^2\theta - 1)/2\rangle$ | **Primary result** — differentiates mutants at dense conditions |
+| Sr₂ (Basaran) | Equation 3 | $\langle\cos(2(\theta_i - \phi_i))\rangle$ | Retained for comparison; showed no significant differences across conditions |
 
-* **Findings:** WT coordination is non-uniform; alignment is highest in the dense colony center and decreases toward the expanding edge.
-* **Mutant Behavior:** Both $\Delta pilG$ and $\Delta pilH$ failed to increase their coordination even as local density increased. This suggests that the Chp system is the "feedback loop" required to translate physical crowding into coordinated movement.
+### Analysis sections
 
-### 3. Conclusion
+| Section | Analysis | Output |
+|---|---|---|
+| **C.1** | Global Sr₁ & Sr₂ for all frames, all 9 conditions | `1_Sr_global.csv` |
+| **C.2** | Quadrant-based Sr — FOV divided into 4 × 66.5 µm regions | `2_Sr_quadrant.csv` |
+| **C.3** | Distance-based local Sr — 20 µm neighbourhood radius | `3_Sr_distance_20um.csv` |
+| **C.4** | Per-cell Sr map from a representative random frame | `4_Sr_per_cell.csv` |
+| **C.5** | Sr vs neighbourhood radius sweep (0–133 µm) | `5_Sr_vs_distance.csv` |
 
-Our results confirm that **mechanotaxis is a prerequisite for collective order.** By regulating reversal frequencies upon cell-cell collisions, the Chp system allows WT bacteria to avoid kinetic traps, whereas mutants lacking this system exhibit "traffic jams" that hinder efficient colony expansion.
+### Notebook Development History
 
+Archived in `/notebooks/evolution/`:
+
+| Notebook | Stage | What it introduced |
+|---|---|---|
+| `05_exploratory_nematic_analysis.ipynb` | Baseline | Sr₁ (Legendre) on global FOV; TrackMate CSV batch loading |
+| `06_batch_nematic_calculation.ipynb` | Dual-formula | Added Sr₂ (Basaran) with φ calculation; switched to proper TrackMate column names |
+| `07_quadrant_spatial_analysis.ipynb` | Spatial subdivision | FOV divided into quadrants to test micro-domain alignment hypothesis |
+| `08_random_frame_validation.ipynb` | Local filtering | Distance-based neighbourhood filter; validated Sr is time-independent |
+| `09_final_mechanotaxis_analysis.ipynb` | Distance sweep | Sr vs neighbourhood radius sweep (0–133 µm); per-cell spatial maps; visualisation |
+
+---
+
+## 📊 Key Results
+
+### 1. Nematic Order — collective alignment
+
+Sr₁ (Legendre) computed within a 20 µm neighbourhood radius revealed a clear density-dependent hierarchy:
+
+**Dense conditions: pilG > pilH > WT**
+
+- **pilG mutants** show the highest local nematic order at dense conditions. Without PilG to promote directional switching, cells align in parallel and maintain orientation, producing high Sr.
+- **pilH mutants** show intermediate but highly variable Sr. PilH-driven reversals upon collisions occasionally produce forward collective movement (high Sr) but can also generate colony-wide jamming (low Sr), explaining the large spread.
+- **WT** shows intermediate, stable Sr — the Chp system balances reversals with persistence, producing coordinated but not rigidly aligned motion.
+- Under **dilute conditions**, all three strains show no significant Sr differences, consistent with minimal cell–cell collisions at low density.
+
+The Sr value was found to be **time-independent** within each condition, justifying the use of a single representative frame for per-cell analysis (Section C.4).
+
+### 2. Neighbourhood length scale
+
+The Sr vs radius sweep (Section C.5) showed that **max_distance < 10 µm** gives the most reliable discrimination between conditions. Sr plateaus at larger radii as the neighbourhood grows beyond the scale of coherent collective motion. Each condition reaches its plateau at a different radius, reflecting differences in colony structure — a single global threshold is therefore insufficient for cross-condition comparison.
+
+### 3. Displacement analysis
+
+Three displacement metrics were extracted from TrackMate tracks (fluorescent cells only):
+
+| Metric | pilG | pilH | WT |
+|---|---|---|---|
+| Displacement/frame (velocity) | Low–moderate | Highest | Intermediate |
+| Total distance | Moderate | Highest | Intermediate |
+| Net displacement | **Lowest** | Highest | Intermediate |
+
+**pilG** reverses frequently → low net displacement despite similar velocity to WT ("jiggling" phenotype).
+**pilH** moves persistently → highest net displacement; large error bars in dense conditions reflect jamming variability.
+**WT** balances both behaviours.
+
+---
+
+## 🛠 Methodology: Nematic Order Parameter
+
+Two formulations of the nematic order parameter were evaluated:
+
+**Sr₁ — Legendre P₂ (absolute orientational order):**
+$$S_{r1} = \left\langle \frac{3\cos^2\theta - 1}{2} \right\rangle$$
+
+where $\theta$ is the orientation angle of each cell's fitted ellipse relative to the x-axis.
+
+**Sr₂ — Basaran radial order (relative to colony expansion direction):**
+$$S_{r2} = \left\langle \cos\left(2(\theta_i - \phi_i)\right) \right\rangle$$
+
+where $\phi_i$ is the polar angle of cell $i$ relative to the colony centroid. Sr₂ = +1 indicates radial alignment; Sr₂ = −1 indicates tangential alignment.
+
+Sr₁ was adopted as the primary metric as it differentiated strains and density conditions. Sr₂ did not yield significant differences and was retained for methodological completeness.
 
 ---
 
 ## 📂 Project Structure
 
-* **`/macros`**: FIJI/ImageJ scripts for automated segmentation and $S_r$ calculation.
-* **`/notebooks`**: Jupyter notebooks for batch processing TrackMate data and spatial statistics.
-* **`/demo`**: Comparison montages of auto-thresholding methods and video demos of the tracking pipeline.
-* **`requirements.txt`**: List of Python dependencies for the analysis environment.
+```
+/
+├── macros/
+│   ├── Bacterial_Mechanotaxis_Pipeline.ijm   # Production pipeline
+│   └── evolution/                            # Development history (01–04)
+├── notebooks/
+│   ├── 09_Mechanotaxis_Analysis_Pipeline.ipynb  # Production notebook
+│   └── evolution/                               # Development history (05–09)
+├── data/
+│   ├── trackmate/                            # TrackMate CSV exports (input)
+│   └── results/                              # Analysis outputs (CSVs + figures)
+├── demo/                                     # Detector comparison, tracking montages
+└── requirements.txt
+```
 
 ---
 
 ## ⚙️ Setup & Installation
 
-### 1. ImageJ/FIJI
+### 1. FIJI / ImageJ
 
 1. Download [FIJI](https://fiji.sc/).
-2. Ensure the **TrackMate** plugin is updated via `Help > Update`.
+2. Ensure **TrackMate** is updated via `Help > Update`.
 
 ### 2. Python Environment
 
-I recommend using Anaconda to manage the environment:
-
 ```bash
-# Create and activate a new environment
 conda create -n mechanotaxis python=3.9
 conda activate mechanotaxis
-
-# Install dependencies
 pip install -r requirements.txt
-
 ```
 
 ---
 
-## 📝 Potential Extension
+## 📝 Potential Extensions
 
-* **PIV Analysis:** Implementing Particle Image Velocimetry to characterize the "flow field" in regions of extreme density where individual cell tracking fails.
-* **Deep Learning:** Further integration of `Omnipose` for more robust segmentation of non-standard bacterial morphologies.
+- **PIV / Optical Flow:** Characterise the bacterial "flow field" in extreme-density regions where individual cell tracking becomes unreliable — directly addressing Part B's requirement for an alternative motion analysis method.
+- **Adaptive distance threshold:** The Sr vs radius sweep (Section C.5) showed each condition reaches its plateau at a different length scale. Automating per-condition threshold selection (e.g., via the inflection point of the Sr–radius curve) would improve cross-condition comparability.
+- **Distribution uniformity analysis:** Dividing frames into grids to quantify spatial heterogeneity — predicted to show pilH clustering (jamming) vs. pilG uniform spread (frequent reversals).
 
 ---
 
+## References
+
+1. Kühn, M.J. et al. *Mechanotaxis directs Pseudomonas aeruginosa twitching motility.* PNAS **118**, e2101759118 (2021).
+2. Basaran, M. et al. *Large-scale orientational order in bacterial colonies during inward growth.* eLife **11**, e72187 (2022).
