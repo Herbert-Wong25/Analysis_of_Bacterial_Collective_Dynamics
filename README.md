@@ -189,9 +189,6 @@ Sr₁ was adopted as the primary metric as it differentiated strains and density
 ├── notebooks/
 │   ├── 09_Mechanotaxis_Analysis_Pipeline.ipynb  # Production notebook
 │   └── evolution/                               # Development history (05–09)
-├── data/
-│   ├── trackmate/                            # TrackMate CSV exports (input)
-│   └── results/                              # Analysis outputs (CSVs + figures)
 ├── demo/                                     # Detector comparison, tracking montages
 └── requirements.txt
 ```
