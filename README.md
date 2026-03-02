@@ -55,7 +55,7 @@ The computational analysis revealed that the Chp system is fundamental to collec
 
 ### 1. Quantification of Nematic Order ($S_r$)
 
-Using the polar coordinate alignment formula $S_r = \langle \cos(2(\theta_i - \phi_i)) \rangle$, we quantified the transition from random to aligned movement:
+Using the polar coordinate alignment formula, we quantified the transition from random to aligned movement:
 
 * **Wild-Type (WT):** Exhibited high local coordination with $S_r$ values peaking at **~0.45** in dense regions. This indicates a robust ability to align trajectories with neighbors.
 * **Mutants ($\Delta pilG$ and $\Delta pilH$):** Showed a significant breakdown in coordination, with $S_r$ values dropping to **~0.1–0.2**. Without functional mechanosensing, cells remain in a poorly ordered, isotropic state.
@@ -72,7 +72,7 @@ Our results confirm that **mechanotaxis is a prerequisite for collective order.*
 
 ---
 
-## 🛠 Methodology: Calculating Nematic Order ($S_r$)
+## 🛠 Key methodology: Calculating Nematic Order ($S_r$)
 
 To quantify the alignment of bacteria relative to the expansion of the colony, the following parameter was implemented:
 
@@ -119,7 +119,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📝 Future Work & Potential Enhancements
+## 📝 Potential Extension
 
 * **PIV Analysis:** Implementing Particle Image Velocimetry to characterize the "flow field" in regions of extreme density where individual cell tracking fails.
 * **Deep Learning:** Further integration of `Omnipose` for more robust segmentation of non-standard bacterial morphologies.
