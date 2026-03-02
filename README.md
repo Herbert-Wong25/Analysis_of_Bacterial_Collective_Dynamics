@@ -72,21 +72,6 @@ Our results confirm that **mechanotaxis is a prerequisite for collective order.*
 
 ---
 
-## 🛠 Key methodology: Calculating Nematic Order ($S_r$)
-
-To quantify the alignment of bacteria relative to the expansion of the colony, the following parameter was implemented:
-
-$$S_r = \langle \cos(2(\theta_i - \phi_i)) \rangle$$
-
-Where:
-
-* $\theta_i$ is the orientation of the $i$-th bacterium relative to the x-axis.
-* $\phi_i$ is the angular position of the bacterium relative to the centroid of the colony.
-* $S_r = 1$: Perfect radial/nematic alignment.
-* $S_r = 0$: Random, isotropic orientation.
-
----
-
 ## 📂 Project Structure
 
 * **`/macros`**: FIJI/ImageJ scripts for automated segmentation and $S_r$ calculation.
