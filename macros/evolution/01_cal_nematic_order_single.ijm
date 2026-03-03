@@ -1,7 +1,6 @@
 // Phase 1: Mathematical Foundation — Single Frame Nematic Order
 // Proof-of-concept: validates the Sr formula on one segmentation mask.
 //
-// BUG FIXED: phi_i_rad now read from Results table inside the Sr loop.
 // Original used the loop variable from step 1.4, which carried only the
 // last computed phi for ALL cells — giving incorrect Sr values.
 //
