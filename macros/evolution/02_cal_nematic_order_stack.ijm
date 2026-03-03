@@ -1,10 +1,10 @@
 // Phase 2: Temporal Analysis — Nematic Order Over Full Stack
 // Extends Phase 1 to time-lapse movies.
 //
-// BUGS FIXED:
+// BUGS FIXED (02.03.2026):
 //   1. sum_Sr explicitly reset to 0 each frame (was missing — caused
 //      accumulation across frames giving wrong Sr from frame 2 onward)
-//   2. phi_i_rad read from Results table per cell (same fix as Phase 1)
+//   2. phi_i_rad read from Results table per cell
 //   3. path variable now defined via dialog (was undefined in calc_nematic_final)
 
 filepath = File.openDialog("Select your mask stack:");
